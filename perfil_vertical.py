@@ -10,7 +10,7 @@ from glob import glob
 import cartopy, cartopy.crs as ccrs
 from metpy.calc import mixing_ratio
 from metpy.units import units
-
+print ("git")
 #######################################################################################################################################
 # le o arquivo 
 arquivo='/home/gabriela/treinamento/python/scripts/fig_dados/2024040100/gfs.2024040100.1p00.f024'

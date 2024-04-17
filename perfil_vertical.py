@@ -50,18 +50,21 @@ v_1000 = ds['v'].sel(isobaricInhPa=1000).mean(dim=['longitude'])
 rm=[]
 #rm = mixing_ratio(25 * units.hPa, 1000 * units.hPa).to('g/kg')
 # Calculando a razão de mistura diretamente de pressão de vapor
-T = ds['t'].values
+T = ds_recortado['t'].values
 pressao_vapor=  6.1078 * 10 ** ( (17.269*T) / (237.3+T) )
-#print (pressao_vapor)
+#ds_recortado = ds_recortado.reset_coords(['latitude', 'longitude'], drop=True)
 
-pressao_total= ds_rm['sp'].values
 
-razao_mistura = mpcalc.mixing_ratio(pressao_vapor * units.pascal, pressao_total * units.pascal)
+ds_rm_recortado['pressao_vapor'] = (('isobaricInhPa', 'longitude'), pressao_vapor)
+ds_rm_recortado['pressao_vapor'] = ds_rm_recortado['pressao_vapor'].metpy.quantify()
 
-# Convertendo para g/kg
-#mixing_ratio_g_kg = mixing_ratio.to('g/kg')
+pressao_total= ds_rm_recortado['sp'].values
 
-#print(f"Razão de mistura: {mixing_ratio_g_kg:.2f}")
+
+razao_mistura = mpcalc.mixing_ratio(ds_rm_recortado['pressao_vapor']* units.pascal, pressao_total* units.pascal)
+
+print (razao_mistura)
+
 
 #######################################################################################################################################
 # plotagem #

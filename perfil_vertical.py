@@ -8,16 +8,15 @@ import xarray as xr
 import matplotlib.pyplot as plt
 from glob import glob
 import cartopy, cartopy.crs as ccrs
-from metpy.calc import mixing_ratio
+import metpy.calc as mpcalc
 from metpy.units import units
-print ("git")
 #######################################################################################################################################
 # le o arquivo 
 arquivo='/home/gabriela/treinamento/python/scripts/fig_dados/2024040100/gfs.2024040100.1p00.f024'
 
 # abre os arquivos
 ds = xr.open_dataset(arquivo, engine='cfgrib', filter_by_keys={'typeOfLevel': 'isobaricInhPa', 'stepType': 'instant'})#,'typeOfLevel': 'surface'})
-ds_rm = xr.open_dataset(arquivo, engine='cfgrib', filter_by_keys={'stepType': 'instant','typeOfLevel': 'hybrid'})#,'typeOfLevel': 'surface'})
+ds_rm = xr.open_dataset(arquivo, engine='cfgrib', filter_by_keys={'stepType': 'instant','typeOfLevel': 'surface'})#,'typeOfLevel': 'surface'})
 
 # recortando longitude
 ds_recortado =ds.sel(latitude=-25.0, longitude=slice(270, 335))
@@ -49,19 +48,21 @@ v_1000 = ds['v'].sel(isobaricInhPa=1000).mean(dim=['longitude'])
 #######################################################################################################################################
 # razao de mistura # 
 rm=[]
-rm = mixing_ratio(25 * units.hPa, 1000 * units.hPa).to('g/kg')
+#rm = mixing_ratio(25 * units.hPa, 1000 * units.hPa).to('g/kg')
 # Calculando a razão de mistura diretamente de pressão de vapor
-#mixing_ratio = mpcalc.mixing_ratio(pressao_vapor, pressao_total)
+T = ds['t'].values
+pressao_vapor=  6.1078 * 10 ** ( (17.269*T) / (237.3+T) )
+#print (pressao_vapor)
+
+pressao_total= ds_rm['sp'].values
+
+razao_mistura = mpcalc.mixing_ratio(pressao_vapor * units.pascal, pressao_total * units.pascal)
 
 # Convertendo para g/kg
 #mixing_ratio_g_kg = mixing_ratio.to('g/kg')
 
 #print(f"Razão de mistura: {mixing_ratio_g_kg:.2f}")
 
-razao_mistura = ds_rm_recortado['rwmr']
-longitude_rm = ds_rm_recortado['longitude'].values
-#print (ds_rm_recortado['rwmr'])
-#quit()
 #######################################################################################################################################
 # plotagem #
 
@@ -75,12 +76,12 @@ Longitude, Pressao = np.meshgrid(longitude[lon], pressao[plon])
 plt.figure(figsize=(10, 6))
 
 # plotar razao de mistura #
-plt.plot(razao_mistura.longitude, razao_mistura.values, zorder=1)
+plt.plot(razao_mistura, zorder=1)
 
 # plota theta
-theta_recortado = theta.sel(latitude=-25.0, longitude=slice(270, 335))
-contour = plt.contourf(theta_recortado['longitude'], theta_recortado['isobaricInhPa'], theta_recortado, levels=100, cmap='viridis')
-plt.colorbar(contour, label='Temperatura Potencial (K)')
+#theta_recortado = theta.sel(latitude=-25.0, longitude=slice(270, 335))
+#contour = plt.contourf(theta_recortado['longitude'], theta_recortado['isobaricInhPa'], theta_recortado, levels=100, cmap='viridis')
+#plt.colorbar(contour, label='Temperatura Potencial (K)')
 
 plt.xlabel('longitude')
 plt.ylabel('Pressão (hPa)')

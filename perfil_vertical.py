@@ -49,11 +49,33 @@ v_1000 = ds['v'].sel(isobaricInhPa=1000).mean(dim=['longitude'])
 # razao de mistura # 
 rm=[]
 #rm = mixing_ratio(25 * units.hPa, 1000 * units.hPa).to('g/kg')
-# Calculando a razão de mistura diretamente de pressão de vapor
-T = ds_recortado['t'].values
-pressao_vapor=  6.1078 * 10 ** ( (17.269*T) / (237.3+T) )
-#ds_recortado = ds_recortado.reset_coords(['latitude', 'longitude'], drop=True)
 
+T = ds_recortado['t']-273.15 #.values #em kelvin
+
+# pressao de vapor de saturacao
+pressao_vapor=  6.1078 * 10 ** ( (17.269*T) / (237.3+T) )
+
+
+ur=ds_recortado['r']/100
+
+#pressa_vapor_real
+pressao_vr=pressao_vapor * ur
+
+
+
+pressao_vr_pascal = pressao_vr * units('hPa')
+
+print ('-------pressao vapor real ----------')
+print (pressao_vr_pascal)
+
+p_isobaric_pascal = ds_recortado['isobaricInhPa']*units('hPa')
+# Calculando a razão de mistura
+w = ((pressao_vr_pascal * 0.622) / (p_isobaric_pascal - pressao_vr_pascal))
+
+print ('-------razao mistura ----------')
+print (w)
+
+quit()
 
 ds_rm_recortado['pressao_vapor'] = (('isobaricInhPa', 'longitude'), pressao_vapor)
 ds_rm_recortado['pressao_vapor'] = ds_rm_recortado['pressao_vapor'].metpy.quantify()
